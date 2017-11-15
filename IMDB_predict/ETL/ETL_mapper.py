@@ -53,7 +53,7 @@ def ETL_process(line):
         # store the parsed result
         try:
             budget = int(parsed_line[0])
-            title = parsed_line[0]
+            title = parsed_line[17]
             genre_json = json.loads(parsed_line[1]) 
             genres = []
             for genre in genre_json:
