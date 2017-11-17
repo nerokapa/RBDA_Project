@@ -46,6 +46,7 @@ Vagrant.configure(2) do |config|
     # Install app dependencies
     cd /vagrant
     sudo pip install -r requirements.txt
+    python download_nltk_model.py
     # Make vi look nice
     sudo -H -u ubuntu echo "colorscheme desert" > ~/.vimrc
   SHELL
