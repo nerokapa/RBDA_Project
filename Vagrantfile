@@ -17,7 +17,6 @@ Vagrant.configure(2) do |config|
       # Windows users need to change the permissions explicitly so that Windows doesn't
       # set the execute bit on all of your files which messes with GitHub users on Mac and Linux
       tdd.vm.synced_folder "./", "/vagrant", owner: "ubuntu", mount_options: ["dmode=755,fmode=644"]
-
       tdd.vm.provider "virtualbox" do |vb|
         # Customize the amount of memory on the VM:
         vb.memory = "2048"
@@ -48,7 +47,25 @@ Vagrant.configure(2) do |config|
     sudo pip install -r requirements.txt
     python download_nltk_model.py
     # Make vi look nice
+    sudo apt-get install -y rabbitmq-server
     sudo -H -u ubuntu echo "colorscheme desert" > ~/.vimrc
+    # sudo apt-get install redis-tools
   SHELL
+
+  ######################################################################
+  # Add Redis docker container
+  ######################################################################
+  config.vm.provision "shell", inline: <<-SHELL
+    # Prepare Redis data share
+    sudo mkdir -p /var/lib/redis/data
+    sudo chown ubuntu:ubuntu /var/lib/redis/data
+  SHELL
+
+  # Add Redis docker container
+  config.vm.provision "docker" do |d|
+    d.pull_images "redis:alpine"
+    d.run "redis:alpine",
+      args: "--restart=always -d --name redis -h redis -p 6379:6379 -v /var/lib/redis/data:/data"
+  end
 
 end

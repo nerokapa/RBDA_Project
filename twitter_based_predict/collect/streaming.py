@@ -7,8 +7,7 @@ from tweepy import Stream
 from tweepy.utils import import_simplejson
 json = import_simplejson()
 
-import csv
-
+from get_user_tweets import get_tweets_of
 # debugging
 # import pdb
 
@@ -37,11 +36,17 @@ class StdOutListener(StreamListener):
         data = json.loads(rawdata)
         try:
             if(data['lang'] == 'en'):
-            # print(data['text'])
-                with open(self.output_file, "a") as f:
-                    output = [data['id'], data['text'].encode('utf-8').rstrip(), data['favorite_count'],
-                            data['retweet_count']]
-                    f.write(json.dumps(output) + '\n')
+                # print(data.keys())
+                user_tweets = get_tweets_of.delay(data['user']['screen_name'])
+                res = user_tweets.get(timeout=5)
+                print(type(res))
+                # print(data['text'])
+                # raise RuntimeError
+                # with open(self.output_file, "a") as f:
+                #     output = [data['id'], data['text'].encode('utf-8').rstrip(), data['favorite_count'],
+                #             data['retweet_count']]
+                #     f.write(json.dumps(output) + '\n')
+
         except KeyError:
             pass
             # f.write()
@@ -56,5 +61,8 @@ if __name__ == '__main__':
     auth.set_access_token(access_token, access_token_secret)
     # pdb.set_trace()
     stream = Stream(auth, l)
-    stream.filter(track=['Justice League', 'Ragnarok', 'Daddy\'s Home', 'Murder on the Orient Express'
-                         'Wonder', 'The Star', 'A Bad Moms Christmas', 'Tumhari Sulu', 'Qarib Qarib Singlle', 'Verna'])
+    stream.filter(track=['the'])
+    # stream.filter(track=['Justice League', 'Ragnarok', 'Daddy\'s Home',
+    #         'Murder on the Orient Express',
+    #         'Wonder', 'The Star', 'A Bad Moms Christmas',
+    #         'Tumhari Sulu', 'Qarib Qarib Singlle', 'Verna'])
