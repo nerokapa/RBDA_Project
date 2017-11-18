@@ -65,7 +65,7 @@ Vagrant.configure(2) do |config|
   config.vm.provision "docker" do |d|
     d.pull_images "redis:alpine"
     d.run "redis:alpine",
-      args: "--restart=always -d --name redis -h redis -p 6379:6379 -v /var/lib/redis/data:/data"
+      args: "--restart=always -d --name redis -h redis -p 6379:6379 -v /vagrant/twitter_based_predict/collect/data:/data"
   end
 
 end
