@@ -14,7 +14,10 @@ We can run this code using the Python Streaming API.
 
 
 ## IMBD part
-
+There are two data source of IMDB, one of which is tmdb_5000_credits.csv, storing the cast infomation, another one of which is tmdb_5000_movies.csv, storing the budget, genre and the final revenue. We select following data as the training features: cast inpression index, genre and budget. 
+ - genre, genre is represented by a 0/1 matrix. There are dozens of protential genres, like Fantasy/Adventure/Fantasy/..
+ - budget is a integer.
+ - cast impression is overal analytics of the movie dataset. Basically it's an weighted average of the movies that the a actor have ever participated in.
 
 ## Regression -- on-build
 The script under RBDA_Project/twitter_based_predict/Regression/ is an on-build regression model 
