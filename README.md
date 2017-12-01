@@ -7,7 +7,7 @@ We used two data sets, one is the IMDB data set, another is the twitter dataset 
 ### Sentimental analysis 
 There are one MapReduce program that do analytics on the twitter data. That is under the 
 RBDA_Project/twitter_based_predict/Analytics/ folder. 
-It judges whether the tweets contains a comment ot a movie and do sentimental analysis to 
+It judges whether the tweets contains a comment onto a movie and do sentimental analysis to 
 give a score to indicate whether the tweet is positive or negative toward the movie.
 And the reducer will compute the average sentimental score of a movie.
 We can run this code using the Python Streaming API.
