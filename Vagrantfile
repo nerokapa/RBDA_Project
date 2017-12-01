@@ -22,6 +22,8 @@ rm hbase-1.3.1-bin.tar.gz
 SCRIPT
 
 Vagrant.configure(2) do |config|
+
+
   config.vm.define "rbda" do |rbda|
       rbda.vm.box = "ubuntu/xenial64"
       rbda.vm.network "private_network", ip: "192.168.33.10"
