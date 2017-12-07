@@ -21,14 +21,17 @@ We select following features to train our model:
 We use Hadoop map reduce to perform data process. There are bad data records that we need to filter out from the original data source, including budget missing, cast information missing, movies that all too old that lack of statistics value. 
 For the data integration stage, we need to merge all the historical revenues all a single actor, which is very complex join operation from multiple tables. We select HBase as the database because of its extraordinarily high scalability. For the cast revenue table, we use cast ID as rowkey, different movie ID as column key. 
 
-### Calculation platform
+### Calculation Platform
 We use PySpark as the platform to calculate regression model.
 
 ## Prediction based on real time social media reaction
 Twitter is a social media site used by over three hundred million users, and movie is one of the most popular topics users are discussing about. We extract two features from the raw Twitter data, that is, popularity and subjective evaluation.
 
-### Popularity analysis
-Popularity is calculated by the count of tweets mentioning a certain movie over overall tweets. The mentioning judgement is performed by fuzzy match and hashtag match.
+### Selected Features
+ - Popularity analysis. Popularity is calculated by the count of tweets mentioning a certain movie over overall tweets. The mentioning judgement is performed by fuzzy match and hashtag match.
+ - Subjective evaluation analysis, after we have performed the tweets match in the previous stage. We can perform a sentiment analysis on the mentioned tweets to sentiment score to indicate whether a certain tweet is positive or negative, and then give a overall sentiment summary.
 
-### subjective evaluation analysis 
-Firstly we will select the relative tweets like we have done in the previous stage. Secondly We perform a sentiment analysis to give each tweet a score to indicate whether the tweet is positive or negative.
+### Data Process
+During the data filtering stage, we keep running into problems that, the way we tweet is more casual as we though it would be.
+We use fuzzywuzzy to perform a tweet mentioning judgement. Fuzzy string matching like a boss. It uses Levenshtein Distance to calculate the differences between sequences in a simple-to-use package.
+We use nltk to perform sentiment analysis. 
