@@ -15,7 +15,6 @@ cat << 'EOF' >> ~/.profile
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 export HBASE_HOME=/home/ubuntu/tools/hbase-1.3.1
 export PATH=\$PATH:\$HBASE_HOME/bin
-start-hbase.sh
 EOF
 
 rm hbase-1.3.1-bin.tar.gz
@@ -45,6 +44,7 @@ Vagrant.configure(2) do |config|
     # Install app dependencies
     cd /vagrant
     sudo pip install -r requirements.txt
+    sudo pip install ipython
     python download_nltk_model.py
 
   SHELL

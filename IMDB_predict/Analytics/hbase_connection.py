@@ -1,6 +1,6 @@
 #encoding=utf-8
 
-import happybase, json
+import happybase, json, os
 
 HBASE_DOMAIN = os.getenv('HBASE_DOMAIN', 'localhost')
 MOVIE_DATA_TABLE = os.getenv('MOVIE_DATA_TABLE', 'MovieTable')
@@ -21,7 +21,7 @@ def reset_database():
     connection.create_table(CAST_DATA_TABLE, families = cfs)
 
 def convert_id(id):
-    return ("%08d"%(int(ts))).encode("ascii")
+    return ("%08d"%(int(id))).encode("ascii")
 
 def get_table(table_name):
     connection = happybase.Connection(HBASE_DOMAIN)
@@ -48,10 +48,10 @@ def put_movie_data(line):
     with table.batch() as b:
         row_key, msg = line.split("\t")
         info = json.loads(msg)
-        for k, v in info:
-            cloumn = ("cf:" + k).encode("ascii")
+        for (k, v) in info.items():
+            column = ("cf:" + k).encode("ascii")
             value = json.dumps(v)
-            b.put(row_key, {cloumn:value})
+            b.put(row_key, {column:value})
 
 def put_movie_cast_data(line):
     table = get_movie_table()
@@ -61,9 +61,9 @@ def put_movie_cast_data(line):
         casts = json.dumps(cast_msg)
         map(convert_id, casts)
         row_key = convert_id(movie_id)
-        cloumn = "cf:movies".encode("ascii")
+        column = "cf:movies".encode("ascii")
         value = json.dumps(casts)
-        b.put(row_key, {cloumn:value})
+        b.put(row_key, {column:value})
 
 def get_movie_by_id(id):
     table = get_movie_table()
@@ -73,9 +73,9 @@ def get_movie_by_id(id):
         return None
     else:
         for attr in MOVIE_ATTR:
-            cloumn = ("cf:" + attr).encode("ascii")
-            if column in res:
-                ret[attr] = res[cloumn];
+            column = ("cf:" + attr).encode("ascii")
+            if column in row:
+                ret[attr] = row[column];
         return ret
 
 def get_cast_by_id(id):
@@ -86,9 +86,9 @@ def get_cast_by_id(id):
         return None
     else:
         for attr in CAST_ATTR:
-            cloumn = ("cf:" + attr).encode("ascii")
+            column = ("cf:" + attr).encode("ascii")
             if column in res:
-                ret[attr] = res[cloumn];
+                ret[attr] = res[column];
         return ret
 
 # do a join like process
@@ -109,4 +109,4 @@ def is_cast_data_exist(cast_id):
     for attr in CAST_ATTR:
         cols.append(("cf:" + cast_id).encode("utf-8"))
     scanner = table.scan(columns = cols)
-    return (res in scanner):
+    return (res in scanner)
