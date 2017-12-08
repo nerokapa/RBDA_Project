@@ -1,13 +1,29 @@
 #encoding=utf-8
 
 import happybase, json, os
+import ast, math
 
 HBASE_DOMAIN = os.getenv('HBASE_DOMAIN', 'localhost')
 MOVIE_DATA_TABLE = os.getenv('MOVIE_DATA_TABLE', 'MovieTable')
 CAST_DATA_TABLE = os.getenv('CAST_DATA_TABLE', 'CastTable')
 
-MOVIE_ATTR = ["budget", "genre", "revenue", "title", "year"]
-CAST_ATTR = ["movies"]
+MOVIE_ATTR = ["budget", "genre", "revenue", "title", "year", "cast"]
+CAST_ATTR = ["revenue", "movies"]
+
+def sq_average(l):
+    cnt = len(l)
+    if cnt is 0:
+        return 0
+    sq_sum = 0
+    for ele in l:
+        sq_sum = sq_sum + ele*ele
+    return math.sqrt(sq_sum*1.0/cnt)
+
+def average(l):
+    cnt = len(l)
+    if cnt is 0:
+        return 0
+    return sum(l)/cnt
 
 def reset_database():
     # delete table
@@ -43,27 +59,62 @@ def get_movie_table():
 def get_cast_table():
     return get_table(CAST_DATA_TABLE)
 
-def put_movie_data(line):
+def put_movie_data(lines):
     table = get_movie_table()
+    if not isinstance(lines, list):
+        lines = [lines]
     with table.batch() as b:
-        row_key, msg = line.split("\t")
-        info = json.loads(msg)
-        for (k, v) in info.items():
-            column = ("cf:" + k).encode("ascii")
-            value = json.dumps(v)
-            b.put(row_key, {column:value})
+        for line in lines:
+            row_key, msg = line.split("\t")
+            info = json.loads(msg)
+            for (k, v) in info.items():
+                column = ("cf:" + k).encode("ascii")
+                value = json.dumps(v)
+                b.put(row_key, {column:value})
 
-def put_movie_cast_data(line):
-    table = get_movie_table()
-    with table.batch() as b:
-        id_msg, cast_msg = line.split("\t")
-        MOVIE, movie_id = id_msg.split("_")
-        casts = json.dumps(cast_msg)
-        map(convert_id, casts)
-        row_key = convert_id(movie_id)
-        column = "cf:movies".encode("ascii")
-        value = json.dumps(casts)
-        b.put(row_key, {column:value})
+def put_movie_cast_data(lines):
+    movie_table = get_movie_table()
+    cast_table = get_cast_table()
+    if not isinstance(lines, list):
+        lines = [lines]
+    with movie_table.batch() as movie_batch, cast_table.batch() as cast_batch:
+        for line in lines:
+            if line.find("MOVIE") >= 0:
+                # data is like 
+                # MOVIE_00396152	[1615805, 1615806, 12714, 58793]
+                id_msg, cast_msg = line.split("\t")
+                MOVIE, movie_id = id_msg.split("_")
+                assert MOVIE == "MOVIE"
+                movie_info = get_movie_by_id(movie_id)
+                if not movie_info:
+                    continue
+                row_key = convert_id(movie_id)
+                column = "cf:cast".encode("ascii")
+                movie_batch.put(row_key, {column:cast_msg})
+            else:
+                # data is like
+                
+                
+                # CAST_00000001	[1895, 306, 879, 87]
+                id_msg, movie_ids = line.split("\t")
+                CAST, cast_id = id_msg.split("_")
+                assert CAST == "CAST"
+                movie_ids = ast.literal_eval(movie_ids)
+                revenues = []
+                for movie_id in movie_ids:
+                    movie_info = get_movie_by_id(movie_id)
+                    if movie_info:
+                        revenues.append(int(movie_info["revenue"]))
+                map(convert_id, movie_ids)
+                row_key = convert_id(cast_id)
+                # put revenue
+                column = "cf:revenue".encode("ascii")
+                value = json.dumps(average(revenues))
+                cast_batch.put(row_key, {column:value})
+                # put movies
+                column = "cf:movies".encode("ascii")
+                value = json.dumps(movie_ids)
+                cast_batch.put(row_key, {column:value})
 
 def get_movie_by_id(id):
     table = get_movie_table()
@@ -87,8 +138,8 @@ def get_cast_by_id(id):
     else:
         for attr in CAST_ATTR:
             column = ("cf:" + attr).encode("ascii")
-            if column in res:
-                ret[attr] = res[column];
+            if column in row:
+                ret[attr] = row[column];
         return ret
 
 # do a join like process
@@ -103,10 +154,24 @@ def cast_movies_generator(id):
     for movie_id in movies_id:
         yield get_movie_table(movie_id)
 
-def is_cast_data_exist(cast_id):
-    table = get_cast_table()
+# yield all movies, will casue severe performance problem
+def all_movies():
+    table = get_movie_table()
     cols = []
-    for attr in CAST_ATTR:
-        cols.append(("cf:" + cast_id).encode("utf-8"))
+    for attr in MOVIE_ATTR:
+        cols.append(("cf:" + attr).encode("utf-8"))
     scanner = table.scan(columns = cols)
-    return (res in scanner)
+    for res in scanner:
+        movie_id = res[0]
+        movie_info = res[1]
+        ret = {}
+        is_break = False
+        ret["id"] = movie_id 
+        for attr in MOVIE_ATTR:
+            column = ("cf:" + attr)
+            if not movie_info.has_key(column):
+                is_break = False
+            else:
+                ret[attr] = movie_info[column];
+        if not is_break:
+            yield ret

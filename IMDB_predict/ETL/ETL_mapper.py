@@ -11,6 +11,8 @@ BAD_COL_CNT = 100
 PARSE_FAILURE = 200
 DAMAGED_RECORD = 300
 
+recorded_genres = {'Mystery': 14, 'Romance': 8, 'History': 15, 'Family': 6, 'Fantasy': 10, 'Horror': 16, 'Crime': 0, 'Drama': 7, 'Science Fiction': 4, 'Animation': 5, 'Music': 9, 'Adventure': 2, 'Foreign': 18, 'Action': 3, 'Comedy': 1, 'Documentary': 17, 'War': 12, 'Thriller': 11, 'Western': 13}
+
 def line_data(filename, skip_first = True):
     f = open(filename)
     if skip_first:
@@ -55,9 +57,10 @@ def ETL_process(line):
             budget = int(parsed_line[0])
             title = parsed_line[17]
             genre_json = json.loads(parsed_line[1]) 
-            genres = []
+            genres = [0]* len(recorded_genres)
             for genre in genre_json:
-                genres.append(genre['name'])
+                genre_id = recorded_genres[genre['name']]
+                genres[genre_id] = 1
             movie_id = int(parsed_line[3])
             revenue = int(parsed_line[12])
             released_time = parsed_line[11]

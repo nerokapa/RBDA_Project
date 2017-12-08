@@ -1,7 +1,6 @@
 # -*- coiding: utf-8 -*-
 
 import csv,json,sys,ast
-import ipdb
 
 TEST_DATASET = "../head.csv"
 COMPLETE_DATASET = "../tmdb_5000_credits.csv"
@@ -66,13 +65,14 @@ def cast_etl_process(line):
 
     return output.strip()
 
-for line in sys.stdin:
-    try:
-        output = cast_etl_process(line)
-    except Exception as e:
-        pass
-    else:
-        sys.stdout.write(output)
-        if len(output):
-            sys.stdout.write("\n")
+if __name__ == "__main__":
+    for line in sys.stdin:
+        try:
+            output = cast_etl_process(line)
+        except Exception as e:
+            pass
+        else:
+            sys.stdout.write(output)
+            if len(output):
+                sys.stdout.write("\n")
 
