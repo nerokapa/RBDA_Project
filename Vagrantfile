@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-$script = <<SCRIPT
+$script_hbase = <<SCRIPT
 cd ~
 mkdir tools
 cd tools
@@ -15,23 +15,23 @@ export HBASE_HOME=/home/ubuntu/tools/hbase-1.3.1
 export PATH=\$PATH:\$HBASE_HOME/bin
 EOF
 rm hbase-1.3.1-bin.tar.gz
-
-sudo pip install py4j
-sudo wget http://d3kbcqa49mib13.cloudfront.net/spark-1.5.1-bin-hadoop2.4.tgz
-sudo tar -xvzf /vagrant/resource/spark-1.5.1-bin-hadoop2.4.tgz
-sudo chown -R ubuntu spark-1.5.1-bin-hadoop2.4
-sudo chgrp -R ubuntu spark-1.5.1-bin-hadoop2.4
-sudo cp /vagrant/resource/log4j.properties /home/ubuntu/tools/spark-1.5.1-bin-hadoop2.4/conf
-
-cat << 'EOF' >> ~/.bashrc
-export SPARK_HOME=/home/ubuntu/tools/spark-1.5.1-bin-hadoop2.4
-export PATH=$SPARK_HOME/bin:$PATH
-export PATH=\$PATH:\$HBASE_HOME/bin
-EOF
-rm spark-1.5.1-bin-hadoop2.4.tgz
-sudo pip install pyspark --no-cache-dir
 SCRIPT
 
+$script_spark = <<SCRIPT
+sudo pip install py4j
+sudo wget http://apache.claz.org/spark/spark-2.2.0/spark-2.2.0-bin-hadoop2.7.tgz
+sudo tar -xvzf spark-2.2.0-bin-hadoop2.7.tgz
+sudo chown -R ubuntu spark-2.2.0-bin-hadoop2.7
+sudo chgrp -R ubuntu spark-2.2.0-bin-hadoop2.7
+sudo cp /vagrant/resource/log4j.properties /home/ubuntu/tools/spark-2.2.0-bin-hadoop2.7/conf
+
+cat << 'EOF' >> ~/.bashrc
+export SPARK_HOME=/home/ubuntu/tools/spark-2.2.0-bin-hadoop2.7
+export PATH=$SPARK_HOME/bin:$PATH
+EOF
+rm spark-2.2.0-bin-hadoop2.7.tgz
+sudo pip install pyspark --no-cache-dir
+SCRIPT
 
 
 Vagrant.configure(2) do |config|
@@ -60,6 +60,8 @@ Vagrant.configure(2) do |config|
   SHELL
 
   # install hbase
-  config.vm.provision "shell", privileged: false, inline:$script
+  config.vm.provision "shell", privileged: false, inline:$script_hbase
+  # install spark
+  config.vm.provision "shell", privileged: false, inline:$script_spark
 
 end
