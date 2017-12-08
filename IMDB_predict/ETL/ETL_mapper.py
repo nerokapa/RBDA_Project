@@ -11,6 +11,10 @@ BAD_COL_CNT = 100
 PARSE_FAILURE = 200
 DAMAGED_RECORD = 300
 
+recorded_genres = {'Mystery': 14, 'Romance': 8, 'History': 15, 'Family': 6, 'Fantasy': 10, 'Horror': 16, 'Crime': 0, 'Drama': 7, 'Science Fiction': 4, 'Animation': 5, 'Music': 9, 'Adventure': 2, 'Foreign': 18, 'Action': 3, 'Comedy': 1, 'Documentary': 17, 'War': 12, 'Thriller': 11, 'Western': 13}
+
+recorded_langs = {'en': 0, 'zh': 3, 'cn': 17, 'af': 9, 'vi': 20, 'is': 25, 'it': 6, 'xx': 22, 'id': 23, 'es': 2, 'ru': 12, 'nl': 16, 'pt': 7, 'no': 18, 'nb': 21, 'th': 15, 'ro': 11, 'pl': 24, 'fr': 5, 'de': 1, 'da': 10, 'fa': 19, 'hi': 13, 'ja': 4, 'he': 14, 'te': 26, 'ko': 8}
+
 def line_data(filename, skip_first = True):
     f = open(filename)
     if skip_first:
@@ -55,9 +59,14 @@ def ETL_process(line):
             budget = int(parsed_line[0])
             title = parsed_line[17]
             genre_json = json.loads(parsed_line[1]) 
-            genres = []
+            genres = [0]* len(recorded_genres)
             for genre in genre_json:
-                genres.append(genre['name'])
+                genre_id = recorded_genres[genre['name']]
+                genres[genre_id] = 1
+            lang = parsed_line[5]
+            lang_vec = [0] * len(recorded_langs)
+            lang_id = recorded_langs[lang]
+            lang_vec[lang_id] = 1
             movie_id = int(parsed_line[3])
             revenue = int(parsed_line[12])
             released_time = parsed_line[11]
@@ -66,6 +75,7 @@ def ETL_process(line):
                     "genre": genres,\
                     "budget": budget,\
                     "revenue": revenue,\
+                    "lang": lang_vec,\
                     "year": year}
             check_errors = data_check(dic)
         except Exception as e:
