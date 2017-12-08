@@ -36,6 +36,7 @@ def movies_in_year(year):
 def cast_analytics():
     pass
     for movie in all_movies():
+        # print movie
         revenues = []
         if not movie.has_key("cast"):
             continue
@@ -48,7 +49,9 @@ def cast_analytics():
             revenues.append(int(actor_info["revenue"]))
         revenues.sort()
         cast_impression = sq_average(revenues[-5:])
-        print movie["revenue"], movie['budget'], movie['year'], cast_impression
+        print "%s, %s, %s, %d, %s, %s"%(movie["revenue"], movie['budget'], \
+                movie['year'], cast_impression,\
+                str(movie["genre"])[1:-1], str(movie["lang"])[1:-1])
 
 if __name__ == "__main__":
     # insert_movie_data()

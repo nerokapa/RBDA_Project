@@ -7,7 +7,7 @@ HBASE_DOMAIN = os.getenv('HBASE_DOMAIN', 'localhost')
 MOVIE_DATA_TABLE = os.getenv('MOVIE_DATA_TABLE', 'MovieTable')
 CAST_DATA_TABLE = os.getenv('CAST_DATA_TABLE', 'CastTable')
 
-MOVIE_ATTR = ["budget", "genre", "revenue", "title", "year", "cast"]
+MOVIE_ATTR = ["budget", "genre", "revenue", "title", "year", "cast", "lang"]
 CAST_ATTR = ["revenue", "movies"]
 
 def sq_average(l):
