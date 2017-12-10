@@ -56,7 +56,6 @@ Vagrant.configure(2) do |config|
     cd /vagrant
     sudo pip install -r requirements.txt
     sudo pip install ipython
-    python download_nltk_model.py
   SHELL
 
   # install hbase
