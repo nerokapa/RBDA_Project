@@ -1,6 +1,6 @@
 import os, sys
 import argparse
-
+from math import log10
 import numpy as np
 
 from pyspark import SparkContext
@@ -11,17 +11,16 @@ from pyspark.ml.regression import LinearRegression
 from pyspark.mllib.tree import GradientBoostedTrees, GradientBoostedTreesModel
 from pyspark.mllib.tree import RandomForest, RandomForestModel
 from pyspark.mllib.util import MLUtils
-
 from pyspark.mllib.stat import Statistics
 
-def parse(lp):
+def parse(lp, delimit=','):
     # label = float(lp[ : lp.find(' ')])
     # vec = Vectors.dense(lp[lp.find(' ') + 1: ].split(' '))
-    values = [float(x) for x in lp.split(' ')]
+    values = [float(x) for x in lp.split(delimit)]
     if(values[0] < 5000000):
-         return LabeledPoint(-1, [-1, -1])
+         return LabeledPoint(-1, [0]])
     # import pdb; pdb.set_trace()
-    return LabeledPoint(values[0], [values[1], values[3]])
+    return LabeledPoint(values[0], [values[2]])
     # return LabeledPoint(values[0], [values[1]])
 
 
@@ -59,7 +58,7 @@ def evaluation(model, test_data, verbose=False):
         glod_predict_pair = sorted(glod_predict_pair, key=lambda tup: tup[0])
         for item in glod_predict_pair:
             # if(abs(item[0] - item[1]) / item[0] > 10):
-                print(item + (abs(item[0] - item[1]) / item[0], ))
+                print(item + (log10(item[0] / item[1]), ))
 
 # trainingData = ssc.textFileStream("/training/data/dir").map(parse).cache()
 # testData = ssc.textFileStream("/testing/data/dir").map(parse)
@@ -81,16 +80,20 @@ if __name__ == "__main__":
     # args = parser.parse_args()
     data = sc.textFile(sys.argv[1])
     parsed_data = data.map(parse)
-    parsed_data.filter(lambda x : x.lable > 0)
-    # view_training_data = parsed_data.collect()
+    parsed_data = parsed_data.filter(lambda x : x.label > 0)
+    view_training_data = parsed_data.collect()
     # for data in view_training_data:
-    #     print(str(data))
+        # print(str(data))
+    # categoricalFeaturesInfo = {}
+    # for i in range(4, 49):
+    # for i in range(3, 48):
+    #     categoricalFeaturesInfo[i] = 2
+    # (training_data, test_data) = parsed_data.randomSplit([0.7, 0.3])
 
-    (training_data, test_data) = parsed_data.randomSplit([0.7, 0.3])
-    model = RandomForest.trainRegressor(training_data, categoricalFeaturesInfo={},
+    model = RandomForest.trainRegressor(training_data, categoricalFeaturesInfo=categoricalFeaturesInfo,
                                                 numTrees=20, featureSubsetStrategy="auto",
                                                 impurity='variance', maxDepth=20, maxBins=64)
-    evaluation(model, test_data)
+    evaluation(model, test_data, True)
     # print('Learned regression GBT model:')
     # print(model.toDebugString())
     # vp = valuesAndPreds.collect()

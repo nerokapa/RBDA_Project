@@ -1,0 +1,4 @@
+  File "/vagrant/twitter_based_predict/Regression/regression.py", line 21
+    return LabeledPoint(-1, [0]])
+                               ^
+SyntaxError: invalid syntax

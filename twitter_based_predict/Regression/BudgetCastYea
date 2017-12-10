@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/vagrant/twitter_based_predict/Regression/regression.py", line 70, in <module>
+    sc = SparkContext('local', 'regression_model')
+  File "/home/ubuntu/tools/spark-2.2.0-bin-hadoop2.7/python/lib/pyspark.zip/pyspark/context.py", line 118, in __init__
+  File "/home/ubuntu/tools/spark-2.2.0-bin-hadoop2.7/python/lib/pyspark.zip/pyspark/context.py", line 180, in _do_init
+  File "/home/ubuntu/tools/spark-2.2.0-bin-hadoop2.7/python/lib/pyspark.zip/pyspark/context.py", line 273, in _initialize_context
+  File "/home/ubuntu/tools/spark-2.2.0-bin-hadoop2.7/python/lib/py4j-0.10.4-src.zip/py4j/java_gateway.py", line 1399, in __call__
+  File "/home/ubuntu/tools/spark-2.2.0-bin-hadoop2.7/python/lib/py4j-0.10.4-src.zip/py4j/java_gateway.py", line 883, in send_command
+  File "/home/ubuntu/tools/spark-2.2.0-bin-hadoop2.7/python/lib/py4j-0.10.4-src.zip/py4j/java_gateway.py", line 1028, in send_command
+  File "/usr/lib/python2.7/socket.py", line 451, in readline
+    data = self._sock.recv(self._rbufsize)
+KeyboardInterrupt
