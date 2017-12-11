@@ -14,7 +14,7 @@ from pyspark.mllib.tree import RandomForest, RandomForestModel
 from pyspark.mllib.util import MLUtils
 from pyspark.mllib.stat import Statistics
 
-from data_integration import all_movies
+from hbase_connection import all_movies
 
 sc = SparkContext('local', 'prediction_model')
 
@@ -49,13 +49,14 @@ def parse(lp):
     return LabeledPoint(values[0], [values[1 : ]])
     # return LabeledPoint(values[0], [values[1]]
 
-# def parse_oa_statistic(lp):
-#     lp = json.loads(lp)
-#     map(lambda x : lp.pop(x), ['oa_screen_name', 'movie_name'])
-#     movie_id = lp.pop('movie_id')
-#     lp = lp.items().sort(key=lambda tup: tup[0])
-#     lp = map(lambda tup : tup[1], lp)
-#     return (movie_id,lp);
+def parse_oa_statistic(lp):
+    lp = json.loads(lp)
+    map(lambda x : lp.pop(x), ['oa_screen_name', 'movie_name'])
+    movie_id = lp.pop('movie_id')
+    lp = lp.items()
+    lp.sort(key=lambda tup: tup[0])
+    lp = map(lambda tup : tup[1], lp)
+    return (movie_id,lp);
 
 
 def evaluation(section, model, test_data, verbose=False, output=None):
@@ -81,41 +82,79 @@ def evaluation(section, model, test_data, verbose=False, output=None):
                 with open(output, 'a+') as fout:
                     fout.write(str(item) + '\n')
 
-def Prep_data_hbase(args):
-    tmdb_data = []
-    for item in all_movies():
-        features = [item['budget']] + [item['cast_impression']] + [item['year']]
-        features = features + item['genre'] + item['lang']
-        t = ()
-        t = t +  (item['id'], )
-        t = t + ([item['revenue']] + features, )
-        tmdb_data.append(t)
+def concat_feature(item, config):
+    movie_id = [item['id']]
+    revenue = [item['revenue']]
+    # should read the config file
+    # and make changes
+    features = [item['budget']] + [item['cast_impression']] + [item['year']]
+    features = features + item['genre'] + item['lang']
+    movie = movie_id + revenue + features
+    return movie
 
-    # if args.twitter_file:
-    #     oa_stat_data = sc.textFile(args.twitter_file)
-    #     oa_stat_data = oa_stat_data.map(parse_oa_statistic)
-    #     oa_stat_data.join(tmdb_data)
-    #
-    #     all_data = all_d11ata.values()
-    # else:
-    #     all_data = tmdb_data.values()
+# mapper from (id, [revenue features]) to LabeledPoint
+def tuple_to_LB(args, config):
+    pass
 
+def Prep_data_hbase(args, config):
+    # import pdb; pdb.set_trace()
+    oa_stat_data = None
+    #will not be from file in te future
+    if args.twitter_file:
+        oa_stat_data = sc.textFile(args.twitter_file)
+        oa_stat_data = oa_stat_data.map(parse_oa_statistic)
+    import pdb; pdb.set_trace()
+    tmdb_data = {}
+    a = {}
+    a['id'] = 174751
+    a['budget'] = 999
+    a['cast_impression'] = 88
+    a['year'] = 1111
+    a['genre'] = [2,2,2]
+    a['lang'] = [3,3,3]
+    a['revenue'] = 888888
 
-    #split all_feature data
+    b = {}
+    b['id'] = 99999
+    b['budget'] = 999999
+    b['cast_impression'] = 99988
+    b['year'] = 1119991
+    b['genre'] = [2,2,992]
+    b['lang'] = [3,3,3999]
+    b['revenue']  = 7777777
+    all_movies_test = [a, b]
+    all_movies = iter(all_movies_test)
+    first_movie = concat_feature(next(all_movies), config)
+    filtered_movies_rdd = sc.parallelize([first_movie])
+    filtered_movies_rdd = filtered_movies_rdd.map(lambda x : (x[0], x[1:]))
+
+    for item in all_movies:
+        movie = concat_feature(item, config)
+        rdd = sc.parallelize([movie])
+        rdd = rdd.map(lambda x : (x[0], x[1:]))
+        filtered_movies_rdd = filtered_movies_rdd.union(rdd)
+    print(str(filtered_movies_rdd.collect()))
+    if args.twitter_file:
+        if oa_stat_data:
+            print(str(oa_stat_data.collect()))
+            filtered_movies_rdd = filtered_movies_rdd.join(oa_stat_data)
+        else:
+            raise Exception("Twitter data not loaded.")
+    import pdb; pdb.set_trace()
+    print(str(filtered_movies_rdd.collect()))
     pass
 
 
-
-def Prep_data_file(args):
-    data = sc.textFile(args.data)
-    parsed_data = data.map(parse)
-    parsed_data = parsed_data.filter(lambda x : x.label > 0)
-    if args.verbose:
-        parsed_data_mem = parsed_data.collect()
-        for line in parsed_data_mem:
-            print(str(line) + '\n')
-    training_data, val_data, test_data = parsed_data.randomSplit([0.7, 0.15, 0.15])
-    return training_data, val_data, test_data
+# def Prep_data_file(args):
+#     data = sc.textFile(args.data)
+#     parsed_data = data.map(parse)
+#     parsed_data = parsed_data.filter(lambda x : x.label > 0)
+#     if args.verbose:
+#         parsed_data_mem = parsed_data.collect()
+#         for line in parsed_data_mem:
+#             print(str(line) + '\n')
+#     training_data, val_data, test_data = parsed_data.randomSplit([0.7, 0.15, 0.15])
+#     return training_data, val_data, test_data
 
 
 def get_cata_dict(config):
@@ -147,14 +186,17 @@ if __name__ == "__main__":
                         help = 'use this option to set the flag of verbose mode')
 
     args = parser.parse_args()
+
     config = ConfigParser.ConfigParser()
     config.read(args.cfg_file)
+
+    Prep_data_hbase(args, config)
 
     # loading from data is just for testing the function
     if args.data:
         training_data, val_data, test_data = Prep_data_file(args)
     else:
-        training_data, val_data, test_data = Prep_data_hbase(args)
+        training_data, val_data, test_data = Prep_data_hbase(args, config)
 
     if args.mode == 'train':
         for section in config.sections():
