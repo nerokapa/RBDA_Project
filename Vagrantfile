@@ -18,6 +18,7 @@ rm hbase-1.3.1-bin.tar.gz
 SCRIPT
 
 $script_spark = <<SCRIPT
+cd ~/tools
 sudo pip install py4j
 sudo wget http://apache.claz.org/spark/spark-2.2.0/spark-2.2.0-bin-hadoop2.7.tgz
 sudo tar -xvzf spark-2.2.0-bin-hadoop2.7.tgz
