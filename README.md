@@ -41,9 +41,15 @@ We use fuzzywuzzy to perform a tweet mentioning judgement. Fuzzy string matching
 We use nltk to perform sentiment analysis. 
 
 ## How to run
-We use a virtual machine based platform to build the whole project, which needs following open source software:
- - Virtual box
- - Vagrant
-```
+ 0. We use a virtual machine based platform to build the whole project, which needs following open source software:
+ - [Virtual box](https://www.virtualbox.org/wiki/Downloads)
+ - [Vagrant](https://www.vagrantup.com/downloads.html)
 
+ 1. Clone the project and start virtual machine. We have written the Vagrant script to help install all the essensial dependencies like HBase, Hadoop, Spark.
 ```
+git git@github.com:nerokapa/RBDA_Project.git
+cd RBDA_Project
+vagrant up
+```
+ 2. Process data in a map-reduce way
+ 
