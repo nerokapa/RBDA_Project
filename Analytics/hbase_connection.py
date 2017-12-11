@@ -160,24 +160,23 @@ def post_process(RF_filters = [RF_has_all_attibute, RF_calculate_CI]):
             for (k, v) in movie_info.items():
                 table.put(row_key, {"cf:"+k:v})
 
-# filter = DF_DiscretWL("year", [2012,2016,2017]) will generate a display filter that only accept movies in year 2012, 2016 and 2017
-def DF_DiscretWL(data_filed, WL):
-    WL = map(str, WL)
+# filter = DF_discretWL("year", [2012,2016,2017]) will generate a display filter that only accept movies in year 2012, 2016 and 2017
+def DF_discret_WL(data_filed, WL):
     def DF(movie_info):
         return movie_info[data_filed] in WL
     return DF
 
-# filter = DF_Numeric("revenue", [1000,2000]) will generate a display filter that only accept movies whose revenue is [1000, 2000]
-def DF_revenue(data_filed, lower_bound, upper_bound):
+# filter = DF_numeric_WL("revenue", [1000,2000]) will generate a display filter that only accept movies whose revenue is [1000, 2000]
+def DF_numeric_WL(data_filed, lower_bound, upper_bound):
     def DF(movie_info):
-        data = int(movie_info[data_filed])
+        data = movie_info[data_filed]
         return (data >= lower_bound) and (data <= upper_bound)
     return DF
 
 # filter = DF_lang_WL(["en","zh"] will generate a display filter that only accept movies with language of "en" and "zh")
 def DF_lang_WL(lang_wl):
     def DF(movie_info):
-        data = int(movie_info["lang"])
+        data = movie_info["lang"]
         for lang in lang_wl:
             idx = LANGS[lang]
             if data[idx]:
@@ -185,10 +184,10 @@ def DF_lang_WL(lang_wl):
         return False
     return DF
 
-# filter = DF_Lang_BL(["en","zh"] will generate a display filter that will not alow movies with language of "en" and "zh")
-def DF_Lang_BL(genre_bl):
+# filter = DF_lang_BL(["en","zh"] will generate a display filter that will not alow movies with language of "en" and "zh")
+def DF_lang_BL(lang_bl):
     def DF(movie_info):
-        data = int(movie_info["lang"])
+        data = movie_info["lang"]
         for lang in lang_bl:
             idx = LANGS[lang]
             if data[idx]:
@@ -197,28 +196,26 @@ def DF_Lang_BL(genre_bl):
     return DF
 
 # filter = DF_genre_WL(["en","zh"] will generate a display filter that only accept movies with language of "en" and "zh")
-def DF_genre_WL(lang_wl):
+def DF_genre_WL(genre_wl):
     def DF(movie_info):
-        data = int(movie_info["lang"])
-        for lang in lang_wl:
-            idx = GENRES[lang]
+        data = movie_info["genre"]
+        for genre in genre_wl:
+            idx = GENRES[genre]
             if data[idx]:
                 return True
         return False
     return DF
 
-# filter = DF_Lang_BL(["en","zh"] will generate a display filter that will not alow movies with language of "en" and "zh")
-def DF_Lang_BL(lang_bl):
+# filter = DF_genre_BL(["en","zh"] will generate a display filter that will not alow movies with language of "en" and "zh")
+def DF_genre_BL(genre_bl):
     def DF(movie_info):
-        data = int(movie_info["lang"])
-        for lang in lang_bl:
-            idx = SUPPURTED_LANGS[lang]
+        data = movie_info["genre"]
+        for genre in genre_bl:
+            idx = GENRES[genre]
             if data[idx]:
                 return False
         return True
     return DF
-
-
 
 def all_movies(display_filters = None):
     table = get_movie_table()
@@ -227,7 +224,16 @@ def all_movies(display_filters = None):
     for res in scanner:
         movie_id = res[0]
         movie_info = res[1]
-        ret = {"id":res[0]}
+        record = {"id":res[0]}
         for attr in DISPLAY_ATTR:
-            ret[attr] = ast.literal_eval(movie_info["cf:"+attr])
-        yield ret
+            record[attr] = ast.literal_eval(movie_info["cf:"+attr])
+
+        bad_record = False
+        for display_filter in display_filters:
+            bad_record = not display_filter(record)
+            if bad_record:
+                break
+        if bad_record:
+            continue
+        else:
+            yield record
