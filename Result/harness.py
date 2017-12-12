@@ -26,6 +26,21 @@ def plot(title, data, filename):
     plt.grid(True)
     plt.savefig(filename)
 
+def assess(goldens, preds, filename):
+    with open(filename, "wb") as f:
+        corrcoef = np.corrcoef(goldens, preds)[0][1]
+        times = {1.5: 0, 2: 0, 3: 0}
+        total = len(preds)
+        for i in range(total):
+            pred = preds[i]
+            golden = goldens[i]
+            for time in times:
+                if (pred <= golden*time) and (pred >= golden/time):
+                    times[time] = times[time] + 1
+        f.write("correlation between two arrays are %f"%corrcoef)
+        for (time, cnt) in times.items():
+            f.write("inside +-%f%% range ratio is %f%%"%(100*time, 100.0*cnt/total))
+
 if __name__ == "__main__":
     dirs = filter(os.path.isdir, os.listdir("./"))
     for d in dirs:
@@ -35,3 +50,5 @@ if __name__ == "__main__":
             path = d+"/"+f
             diffs, goldens, preds = get_logged_array(path)
             plot(title, diffs, d+"/"+f.replace("dat","png"))
+            assess(goldens, preds, d+"/"+f.replace("dat","txt"))
+
