@@ -90,9 +90,9 @@ def insert_cast_data():
             movie_table = get_movie_table()
             cast_table = get_cast_table()
             counter = 500
-                    
+
         if line.find("MOVIE") >= 0:
-            # data is like 
+            # data is like
             # MOVIE_00396152	[1615805, 1615806, 12714, 58793]
             id_msg, cast_msg = line.split("\t")
             MOVIE, movie_id = id_msg.split("_")
@@ -124,7 +124,7 @@ def RF_has_all_attibute(movie_info, requiared_attr = BASIC_MOVIE_ATTR):
         if not movie_info.has_key("cf:"+attr):
             return {}
         ret[attr] = movie_info["cf:"+attr]
-    return ret 
+    return ret
 
 # record filter that calculate cast impression
 def RF_calculate_CI(movie_info):
@@ -137,7 +137,7 @@ def RF_calculate_CI(movie_info):
         if not actor_info:
             continue
         revenues.append(float(actor_info["revenue"]))
-    sqrd_r = map(lambda x: x*x, revenues[-5:]) 
+    sqrd_r = map(lambda x: x*x, revenues[-5:])
     if len(sqrd_r) < 1:
         mean = 0
     else:
@@ -217,7 +217,7 @@ def DF_genre_BL(genre_bl):
         return True
     return DF
 
-def all_movies(display_filters = None):
+def all_movies(display_filters = []):
     table = get_movie_table()
     cols = []
     scanner = table.scan(columns = cols)
