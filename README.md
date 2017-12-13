@@ -10,8 +10,8 @@ The three datasets we are using are as follows:
 The Movie Database (TMDb) is a community built movie and TV database. TMDb offers up to 364904 movies data, including its budget, production crews, release date, genres, language, runtime. Also, they provide a detailed information of an actor, recording all the movies he or she has participated in. 
 
 ### Data source
-Data\/tmdb\_5000\_credits.csv - crew infomation.
-Data\/tmdb\_5000\_movies.csv - overview infomation.
+ - Data\/tmdb\_5000\_credits.csv - crew infomation.
+ - Data\/tmdb\_5000\_movies.csv - overview infomation.
 
 ### Selected Features
 We select following features to train our model:
@@ -33,8 +33,8 @@ These steps need very complex join operations from both tables, so we use HBase 
 Twitter is a social media site used by over three hundred million users, and movie is one of the most popular topics users are discussing about. In order to estimate a movie's social attention. We manully find the offical twitter account, extract all the data of the twitter account as features.
 
 ### Data Source
-Data\Movie\_Twitter\_Account.csv - manually noted offical Twitter account.
-Data\twitter\_data.json - twitter data we collected using Twitter API.
+ - Data\Movie\_Twitter\_Account.csv - manually noted offical Twitter account.
+ - Data\twitter\_data.json - twitter data we collected using Twitter API.
 
 ### Selected Features
  - average tweet "favorite" count.
